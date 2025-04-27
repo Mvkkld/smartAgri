@@ -4,13 +4,16 @@ import { Camera } from 'expo-camera';
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back); // Default camera type
+  const [cameraType, setCameraType] = useState(null); // initially null
   const cameraRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
+      if (status === 'granted') {
+        setCameraType(Camera.Constants.Type.back); // tab set karo jab permission mil jaye
+      }
     })();
   }, []);
 
@@ -30,19 +33,27 @@ export default function CameraScreen() {
     );
   }
 
+  if (!cameraType) {
+    return (
+      <View style={styles.permissionContainer}>
+        <Text>Loading camera...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Camera 
         style={styles.camera} 
-        type={type || Camera.Constants.Type.back} // Default to 'back' camera if 'type' is undefined
+        type={cameraType}
         ref={cameraRef}
       >
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-              setType(
-                type === Camera.Constants.Type.back
+              setCameraType(prevType =>
+                prevType === Camera.Constants.Type.back
                   ? Camera.Constants.Type.front
                   : Camera.Constants.Type.back
               );
@@ -88,5 +99,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
+
+
 
 
